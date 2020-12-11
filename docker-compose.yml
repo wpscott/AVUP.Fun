@@ -1,6 +1,20 @@
 version: '3.4'
 
 services:
+  avup.fun:
+    image: ${DOCKER_REGISTRY-}avupfun
+    build:
+      context: .
+      dockerfile: AVUP.Fun/Dockerfile
+    depends_on:
+      - clickhouse-server
+      - broker
+    ports:
+      - 127.0.0.1:80:80
+    networks:
+      - clickhouse
+      - kafka
+
   clickhouse-server:
     image: yandex/clickhouse-server
     ulimits:
