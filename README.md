@@ -1,20 +1,20 @@
 # AVUP.Fun
 
-»ùÓÚ[Confluent Kafka](https://www.confluent.io)Óë[ClickHouse](https://clickhouse.tech)µÄÊı¾İ²Ö¿â´î½¨
+åŸºäº[Confluent Kafka](https://www.confluent.io)ä¸[ClickHouse](https://clickhouse.tech)çš„æ•°æ®ä»“åº“æ­å»º
 
 <details>
-<summary>ÑùÀı´î½¨</summary>
-1. ´´½¨KafkaÖ÷Ìâ
+<summary>æ ·ä¾‹æ­å»º</summary>
+1. åˆ›å»ºKafkaä¸»é¢˜
 
 ```shell
 kafka-topics --bootstrap-server localhost:9092 --create --topic acer
 ```
-2. ´´½¨ClickHouseÊı¾İ¿â
+2. åˆ›å»ºClickHouseæ•°æ®åº“
 
 ```sql
 create database acfun;
 ```
-3. ´´½¨acer±í
+3. åˆ›å»ºacerè¡¨
 ```sql
 CREATE TABLE acfun.acer
 (
@@ -41,7 +41,7 @@ CREATE TABLE acfun.acer
 ENGINE = MergeTree()
 ORDER BY (UperId, LiveId, UserId)
 ```
-4. ´´½¨kafka_acer±í£¬ÓÃÓÚÁ¬½ÓkafkaµÄacerÖ÷Ìâ
+4. åˆ›å»ºkafka_acerè¡¨ï¼Œç”¨äºè¿æ¥kafkaçš„acerä¸»é¢˜
 
 ```sql
 CREATE TABLE acfun.kafka_acer
@@ -70,7 +70,7 @@ ENGINE = Kafka
 SETTINGS kafka_broker_list = 'broker:9092', kafka_topic_list = 'acer', kafka_group_name = 'acer', kafka_format = 'JSONEachRow'
 ```
 
-5. ´´½¨acer_view±í£¬ÓÃÓÚ´Ókafka_acer±íÖĞµ¼ÈëÊı¾İÖÁacer±í
+5. åˆ›å»ºacer_viewè¡¨ï¼Œç”¨äºä»kafka_acerè¡¨ä¸­å¯¼å…¥æ•°æ®è‡³acerè¡¨
 
 ```sql
 CREATE MATERIALIZED VIEW acfun.acer_view TO acfun.acer AS
@@ -78,62 +78,62 @@ SELECT *
 FROM acfun.kafka_acer
 ```
 
-6. ÏòKafakµÄacerÖ÷ÌâÖĞĞ´ÈëĞòÁĞ»¯µÄJSON£¬ÄÚÈİÎª
+6. å‘Kafakçš„acerä¸»é¢˜ä¸­å†™å…¥åºåˆ—åŒ–çš„JSONï¼Œå†…å®¹ä¸º
 
-```json
+```
 {
-    "UperId": 0,
+    "UperId": number,
     "LiveId": "string",
     "Type": "string",
-    "UserId": 0,
+    "UserId": number,
     "UserName": "string",
     "UserAvatar": "string",
     "UserData": "string",
-    "UserBadgeUperId": 0,
+    "UserBadgeUperId": number,
     "UserBadgeName": "string",
-    "UserBadgeLevel": 0,
-    "UserManagerType": 0,
-    "Timestamp": 0,
+    "UserBadgeLevel": number,
+    "UserManagerType": number,
+    "Timestamp": number,
     "Comment": "string",
-    "GiftId": 0,
+    "GiftId": number,
     "GiftName": "string",
-    "GiftCount": 0,
-    "GiftCombo": 0,
+    "GiftCount": number,
+    "GiftCombo": number,
     "GiftComboId": "string",
-    "GiftValue": 0
+    "GiftValue": number
 }
 ```
 </details>
 
 <details>
-<summary>ÏÖÓĞAPI</summary>
+<summary>ç°æœ‰API</summary>
 
-# ·Ç¹Ù·½²»ÍêÕûÍ³¼Æ
+# éå®˜æ–¹ä¸å®Œæ•´ç»Ÿè®¡
 
-## »ñÈ¡×îĞÂ¿ª²¥µÄÖ÷²¥£¨Ä¬ÈÏÏÔÊ¾10¸ö£©
+## è·å–æœ€æ–°å¼€æ’­çš„ä¸»æ’­ï¼ˆé»˜è®¤æ˜¾ç¤º10ä¸ªï¼‰
 * https://api.avup.fun/uper
 * https://api.avup.fun/uper/{offset}/{limit}
 
-## »ñÈ¡Ö÷²¥×îĞÂµÄ¿ª²¥¼ÇÂ¼£¨Ä¬ÈÏÏÔÊ¾10¸ö£©
+## è·å–ä¸»æ’­æœ€æ–°çš„å¼€æ’­è®°å½•ï¼ˆé»˜è®¤æ˜¾ç¤º10ä¸ªï¼‰
 * https://api.avup.fun/uper/{id}
 * https://api.avup.fun/uper/{id}/{offset}/{limit}
 
-## »ñÈ¡Ö±²¥Êı¾İ£¨°üÀ¨µ¯Ä»¡¢½øÈë¡¢µãÔŞ¡¢¹Ø×¢¼°ÀñÎï£©
+## è·å–ç›´æ’­æ•°æ®ï¼ˆåŒ…æ‹¬å¼¹å¹•ã€è¿›å…¥ã€ç‚¹èµã€å…³æ³¨åŠç¤¼ç‰©ï¼‰
 * https://api.avup.fun/live/{id}/{liveId}
 * https://api.avup.fun/live/{id}/{liveId}/{timestamp}
 
-## »ñÈ¡Ö±²¥Êı¾İ£¨Ö¸¶¨µ¯Ä»¡¢½øÈë¡¢µãÔŞ¡¢¹Ø×¢»òÀñÎï£©
+## è·å–ç›´æ’­æ•°æ®ï¼ˆæŒ‡å®šå¼¹å¹•ã€è¿›å…¥ã€ç‚¹èµã€å…³æ³¨æˆ–ç¤¼ç‰©ï¼‰
 * https://api.avup.fun/live/{id}/{liveId}/{type}
 * https://api.avup.fun/live/{id}/{liveId}/{type}/{timestamp}
 
 **type: comment, enter, like, follow, gift**
 
-## »ñÈ¡µ±ÈÕ/ÖÜ/ÔÂ¹Û¿´Ö±²¥×î¶àµÄ10Î»¹ÛÖÚ
+## è·å–å½“æ—¥/å‘¨/æœˆè§‚çœ‹ç›´æ’­æœ€å¤šçš„10ä½è§‚ä¼—
 * https://api.avup.fun/statistics/live/day
 * https://api.avup.fun/statistics/live/week
 * https://api.avup.fun/statistics/live/month
 
-## »ñÈ¡µ±ÈÕ/ÖÜ/ÔÂ·¢ËÍµ¯Ä»×î¶àµÄ10Î»¹ÛÖÚ
+## è·å–å½“æ—¥/å‘¨/æœˆå‘é€å¼¹å¹•æœ€å¤šçš„10ä½è§‚ä¼—
 * https://api.avup.fun/statistics/comment/day
 * https://api.avup.fun/statistics/comment/week
 * https://api.avup.fun/statistics/comment/month
