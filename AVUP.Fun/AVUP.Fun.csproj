@@ -29,4 +29,9 @@
     <ProjectReference Include="..\AVUP.Fun.Shared\AVUP.Fun.Shared.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Hubs\" />
+    <Folder Include="Services\" />
+  </ItemGroup>
+
 </Project>

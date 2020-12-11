@@ -1,5 +1,3 @@
-using AVUP.Fun.Hubs;
-using AVUP.Fun.Services;
 using ClickHouse.Ado;
 using ClickHouse.Net;
 using Microsoft.AspNetCore.Builder;
@@ -23,8 +21,6 @@ namespace AVUP.Fun
 
         public static void ConfigureServices(IServiceCollection services)
         {
-            services.AddSignalR();
-
             services.AddControllers();
 
             services.AddClickHouse();
