@@ -36,7 +36,6 @@ namespace AVUP.Fun
                     builder.AllowAnyOrigin();
                     builder.AllowAnyMethod();
                     builder.AllowAnyHeader();
-                    builder.AllowCredentials();
                     builder.SetPreflightMaxAge(TimeSpan.FromDays(30));
                 });
             });
