@@ -74,7 +74,7 @@ FROM
             );
         }
 
-        [HttpGet("{user:long}{live}/data")]
+        [HttpGet("{user:long}/{live}/data")]
         public ActionResult GetLiveData(long user, string live)
         {
             return Json(
