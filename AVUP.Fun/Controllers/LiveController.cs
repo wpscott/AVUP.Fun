@@ -20,6 +20,21 @@ ORDER BY Timestamp ASC";
 FROM acer
 WHERE (UperId = @user) AND (LiveId = @live) AND (Type = @type) AND (Timestamp > @timestamp)
 ORDER BY Timestamp ASC";
+        private const string SELECT_LIVE_DATA_CMD =
+@"SELECT
+    Timestamp,
+    finalizeAggregation(state) AS Total,
+    runningAccumulate(state) AS AccumulateTotal
+FROM
+(
+    SELECT
+        Timestamp,
+        uniqState(Timestamp, UserId) AS state
+    FROM acer
+    WHERE (UperId = @user) AND (LiveId = @live) AND (Type = 'comment')
+    GROUP BY Timestamp
+    ORDER BY Timestamp ASC
+)";
 
         private readonly ILogger<LiveController> logger;
         private readonly IClickHouseDatabase database;
@@ -53,6 +68,29 @@ ORDER BY Timestamp ASC";
                         {
                             ParameterName = "timestamp",
                             Value = timestamp ?? 0
+                        },
+                    }
+                )
+            );
+        }
+
+        [HttpGet("{user:long}{live}/data")]
+        public ActionResult GetLiveData(long user, string live)
+        {
+            return Json(
+                database.ExecuteQueryMapping<LiveData>(
+                    SELECT_LIVE_DATA_CMD,
+                    new[]                {
+                        new ClickHouseParameter {
+                            DbType = System.Data.DbType.UInt64,
+                            ParameterName = "user",
+                            Value = user
+                        },
+                        new ClickHouseParameter
+                        {
+                            DbType = System.Data.DbType.String,
+                            ParameterName = "live",
+                            Value = live
                         },
                     }
                 )
