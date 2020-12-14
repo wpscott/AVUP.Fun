@@ -29,6 +29,17 @@ namespace AVUP.Fun
 #else
             services.AddTransient(p => new ClickHouseConnectionSettings("Host=clickhouse-server;Port=9000;Database=acfun;User=default"));
 #endif
+            services.AddCors(options =>
+            {
+                options.AddDefaultPolicy(builder =>
+                {
+                    builder.AllowAnyOrigin();
+                    builder.AllowAnyMethod();
+                    builder.AllowAnyHeader();
+                    builder.AllowCredentials();
+                    builder.SetPreflightMaxAge(TimeSpan.FromDays(30));
+                });
+            });
         }
 
         public static void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -43,6 +54,7 @@ namespace AVUP.Fun
             app.UseSerilogRequestLogging();
 
             app.UseRouting();
+            app.UseCors();
 
             app.UseEndpoints(endpoints =>
             {

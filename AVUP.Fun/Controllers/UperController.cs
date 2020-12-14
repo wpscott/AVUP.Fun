@@ -1,11 +1,13 @@
 ﻿using AVUP.Fun.Models;
 using ClickHouse.Ado;
 using ClickHouse.Net;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
 namespace AVUP.Fun.Controllers
 {
+    [EnableCors]
     [Route("[controller]")]
     [ApiController]
     public class UperController : Controller
