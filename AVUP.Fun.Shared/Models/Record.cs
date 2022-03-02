@@ -1,6 +1,4 @@
-﻿using System.Text.Json.Serialization;
-
-namespace AVUP.Fun.Shared.Models
+﻿namespace AVUP.Fun.Shared.Models
 {
     public abstract record Record
     {

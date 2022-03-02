@@ -1,5 +1,4 @@
 ﻿using AVUP.Fun.Models;
-using ClickHouse.Ado;
 using ClickHouse.Net;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;

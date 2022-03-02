@@ -6,17 +6,17 @@ EXPOSE 80
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
-COPY ["AVUP.Fun/AVUP.Fun.csproj", "AVUP.Fun/"]
+COPY ["AVUP.Fun.Intake/AVUP.Fun.Intake.csproj", "AVUP.Fun.Intake/"]
 COPY ["NuGet.Config", "./"]
-RUN dotnet restore "AVUP.Fun/AVUP.Fun.csproj" --configfile NuGet.Config
+RUN dotnet restore "AVUP.Fun.Intake/AVUP.Fun.Intake.csproj" --configfile NuGet.Config
 COPY . .
-WORKDIR "/src/AVUP.Fun"
-RUN dotnet build "AVUP.Fun.csproj" -c Release -o /app/build
+WORKDIR "/src/AVUP.Fun.Intake"
+RUN dotnet build "AVUP.Fun.Intake.csproj" -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "AVUP.Fun.csproj" -c Release -o /app/publish
+RUN dotnet publish "AVUP.Fun.Intake.csproj" -c Release -o /app/publish
 
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "AVUP.Fun.dll"]
+ENTRYPOINT ["dotnet", "AVUP.Fun.Intake.dll"]

@@ -1,16 +1,13 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
-    <DockerComposeProjectPath>..\docker-compose.dcproj</DockerComposeProjectPath>
-    <UserSecretsId>dfef82a7-3a30-42b3-a299-1233bf2dc98e</UserSecretsId>
+    <UserSecretsId>e0a73f9a-61f5-47c7-bac9-55ce1207f1e7</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="AcFunDanmu" Version="1.5.0" />
-    <PackageReference Include="ClickHouse.Ado" Version="1.4.2" />
-    <PackageReference Include="ClickHouse.Net" Version="0.5.1" />
     <PackageReference Include="Confluent.Kafka" Version="1.8.2" />
     <PackageReference Include="Confluent.SchemaRegistry" Version="1.8.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="6.0.2">
@@ -29,9 +26,6 @@
     <ProjectReference Include="..\AVUP.Fun.Shared\AVUP.Fun.Shared.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Hubs\" />
-    <Folder Include="Services\" />
-  </ItemGroup>
+  <ProjectExtensions><VisualStudio><UserProperties properties_4launchsettings_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>
 
 </Project>

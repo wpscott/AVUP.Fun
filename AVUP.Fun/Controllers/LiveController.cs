@@ -54,23 +54,10 @@ FROM
             return Json(
                 database.ExecuteQueryMapping<ACER>(
                     SELECT_ALL_CMD,
-                    new[] {
-                        new ClickHouseParameter {
-                            DbType = System.Data.DbType.UInt64,
-                            ParameterName = "user",
-                            Value = user
-                        },
-                        new ClickHouseParameter
-                        {
-                            DbType = System.Data.DbType.String,
-                            ParameterName = "live",
-                            Value = live
-                        },
-                        new ClickHouseParameter
-                        {
-                            ParameterName = "timestamp",
-                            Value = timestamp ?? 0
-                        },
+                    new ClickHouseParameter[] {
+                        new () { DbType = System.Data.DbType.UInt64, ParameterName = "user", Value = user },
+                        new() { DbType = System.Data.DbType.String, ParameterName = "live", Value = live },
+                        new() { ParameterName = "timestamp", Value = timestamp ?? 0 },
                     }
                 )
             );
@@ -82,18 +69,9 @@ FROM
             return Json(
                 database.ExecuteQueryMapping<LiveData>(
                     SELECT_LIVE_DATA_CMD,
-                    new[]                {
-                        new ClickHouseParameter {
-                            DbType = System.Data.DbType.UInt64,
-                            ParameterName = "user",
-                            Value = user
-                        },
-                        new ClickHouseParameter
-                        {
-                            DbType = System.Data.DbType.String,
-                            ParameterName = "live",
-                            Value = live
-                        },
+                    new ClickHouseParameter[] {
+                        new  () { DbType = System.Data.DbType.UInt64, ParameterName = "user", Value = user },
+                        new () { DbType = System.Data.DbType.String, ParameterName = "live", Value = live },
                     }
                 )
             );
@@ -106,29 +84,11 @@ FROM
             return Json(
                 database.ExecuteQueryMapping<ACER>(
                     SELECT_ALL_WITH_TYPE_CMD,
-                    new[] {
-                        new ClickHouseParameter {
-                            DbType = System.Data.DbType.UInt64,
-                            ParameterName = "user",
-                            Value = user
-                        },
-                        new ClickHouseParameter
-                        {
-                            DbType = System.Data.DbType.String,
-                            ParameterName = "live",
-                            Value = live
-                        },
-                        new ClickHouseParameter
-                        {
-                            DbType = System.Data.DbType.String,
-                            ParameterName = "type",
-                            Value = type
-                        },
-                        new ClickHouseParameter
-                        {
-                            ParameterName = "timestamp",
-                            Value = timestamp ?? 0
-                        },
+                    new ClickHouseParameter[] {
+                        new () { DbType = System.Data.DbType.UInt64, ParameterName = "user", Value = user },
+                        new () { DbType = System.Data.DbType.String, ParameterName = "live", Value = live },
+                        new () { DbType = System.Data.DbType.String, ParameterName = "type", Value = type },
+                        new () { ParameterName = "timestamp", Value = timestamp ?? 0 },
                     }
                 )
             );

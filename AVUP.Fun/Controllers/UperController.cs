@@ -47,20 +47,10 @@ LIMIT @offset, @limit";
             return Json(
                 database.ExecuteQueryMapping<Uper>(
                     SELECT_USER_CMD,
-                    new[]
+                    new ClickHouseParameter[]
                     {
-                        new ClickHouseParameter
-                        {
-                            DbType = System.Data.DbType.UInt32,
-                            ParameterName = "offset",
-                            Value = offset ?? 0
-                        },
-                        new ClickHouseParameter
-                        {
-                            DbType = System.Data.DbType.UInt32,
-                            ParameterName = "limit",
-                            Value =limit ?? 20
-                        }
+                        new () { DbType = System.Data.DbType.UInt32, ParameterName = "offset", Value = offset ?? 0 },
+                        new () { DbType = System.Data.DbType.UInt32, ParameterName = "limit", Value =limit ?? 20 }
                     }
                 )
             );
@@ -73,26 +63,10 @@ LIMIT @offset, @limit";
             return Json(
                 database.ExecuteQueryMapping<Live>(
                     SELECT_LIVE_CMD,
-                    new[]
-                    {
-                        new ClickHouseParameter
-                        {
-                            DbType = System.Data.DbType.UInt64,
-                            ParameterName = "user",
-                            Value = user
-                        },
-                        new ClickHouseParameter
-                        {
-                            DbType = System.Data.DbType.UInt32,
-                            ParameterName = "offset",
-                            Value = offset ?? 0
-                        },
-                        new ClickHouseParameter
-                        {
-                            DbType = System.Data.DbType.UInt32,
-                            ParameterName = "limit",
-                            Value =limit ?? 20
-                        }
+                    new ClickHouseParameter[] {
+                        new() { DbType = System.Data.DbType.UInt64, ParameterName = "user", Value = user },
+                        new ClickHouseParameter { DbType = System.Data.DbType.UInt32, ParameterName = "offset", Value = offset ?? 0 },
+                        new ClickHouseParameter { DbType = System.Data.DbType.UInt32, ParameterName = "limit", Value = limit ?? 20 }
                     }
                 )
             );

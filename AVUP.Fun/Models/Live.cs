@@ -2,7 +2,7 @@
 
 namespace AVUP.Fun.Models
 {
-    public record Live
+    public sealed record Live
     {
         public string LiveId { get; init; }
         public string Title { get; init; }

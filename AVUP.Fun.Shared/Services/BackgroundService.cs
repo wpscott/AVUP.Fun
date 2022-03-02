@@ -12,8 +12,7 @@ namespace AVUP.Fun.Shared.Services
     public abstract class BackgroundService : IHostedService, IDisposable
     {
         private Task _executingTask;
-        private readonly CancellationTokenSource _stoppingCts =
-                                                       new CancellationTokenSource();
+        private readonly CancellationTokenSource _stoppingCts = new();
 
         protected abstract Task ExecuteAsync(CancellationToken stoppingToken);
 
@@ -55,9 +54,19 @@ namespace AVUP.Fun.Shared.Services
 
         }
 
-        public virtual void Dispose()
+        public void Dispose()
         {
-            _stoppingCts.Cancel();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _stoppingCts.Cancel();
+                _stoppingCts.Dispose();
+            }
         }
     }
 }
