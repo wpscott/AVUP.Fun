@@ -7,9 +7,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Immutable;
 using System.Collections.ObjectModel;
-using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
@@ -31,7 +29,7 @@ namespace AVUP.Fun.Intake.Services
         private readonly IHttpClientFactory _clientFactory;
         private Timer _timer;
 
-        private static ImmutableHashSet<string> _types = ImmutableHashSet.Create<string>();
+        //private static ImmutableHashSet<string> _types = ImmutableHashSet.Create<string>();
 
         public IntakeWorker(ILogger<IntakeWorker> logger, IHttpClientFactory clientFactory)
         {
@@ -113,13 +111,13 @@ namespace AVUP.Fun.Intake.Services
             };
             if (_Monitors.TryAdd(live.AuthorId, data))
             {
-                var type = string.Join(string.Empty, (live.User.VerifiedTypes ?? Array.Empty<long>()).OrderBy(type => type));
-                var isNewType = !_types.Contains(type);
-                if (isNewType)
-                {
-                    ImmutableInterlocked.Update(ref _types, (types, type) => types.Add(type), type);
-                }
-                await client.Initialize($"{live.AuthorId}", isNewType).ConfigureAwait(false);
+                //var type = string.Join(string.Empty, (live.User.VerifiedTypes ?? Array.Empty<long>()).OrderBy(type => type));
+                //var isNewType = !_types.Contains(type);
+                //if (isNewType)
+                //{
+                //    ImmutableInterlocked.Update(ref _types, (types, type) => types.Add(type), type);
+                //}
+                await client.Initialize($"{live.AuthorId}", true).ConfigureAwait(false);
                 _logger.LogInformation("Start monitoring {AuthorId}", live.AuthorId);
                 int retry = 0;
                 using var resetTimer = new System.Timers.Timer(10000);

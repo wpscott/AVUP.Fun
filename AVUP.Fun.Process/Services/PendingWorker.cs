@@ -44,7 +44,7 @@ namespace AVUP.Fun.Process.Services
 
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            return Task.WhenAll(Enumerable.Range(0, 6).Select(_ =>
+            return Task.WhenAll(Enumerable.Range(0, 6).Select(id => Task.Run(() =>
             {
                 using var producer = new ProducerBuilder<Null, string>(producerConfig).Build();
                 using var consumer = new ConsumerBuilder<Ignore, string>(consumerConfig).Build();
@@ -62,7 +62,7 @@ namespace AVUP.Fun.Process.Services
                 producer.Flush(stoppingToken);
                 consumer.Close();
                 return Task.CompletedTask;
-            }));
+            })));
         }
 
         internal static ulong ConvertNumber(string number)
