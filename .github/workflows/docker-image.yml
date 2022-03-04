@@ -16,7 +16,7 @@ jobs:
             tag: avupfun
           - image: AVUP.Fun.Process
             tag: avupfunprocess
-          - image: AVUP.Fun.Process
+          - image: AVUP.Fun.Intake
             tag: avupfunintake
     runs-on: ubuntu-latest
     environment: CI
