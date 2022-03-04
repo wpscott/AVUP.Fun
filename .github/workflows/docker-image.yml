@@ -13,6 +13,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Build the Docker image
-      run: docker build -t "127.0.0.1:42266/avupfun" --label "com.microsoft.created-by=visual-studio" --label "com.microsoft.visual-studio.project-name=AVUP.Fun" -f ./AVUP.Fun/Dockerfile .
+    - name: Repo checkout
+      uses: actions/checkout@v2
+      
+    - name: Registry login
+      uses: docker/login-action@v1.14.1
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ secrets.REGISTRY_USERNAME }}
+        password: ${{ secrets.REGISTRY_PASSWORD }}
+        
+    - name: Build & Push
+      uses: docker/build-push-action@v2.9.0
+      with:
+        context: .
+        file: ./AVUP.Fun/Dockerfile
+        tags: ${{ env.REGISTRY }}/avupfun
