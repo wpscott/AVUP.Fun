@@ -304,6 +304,7 @@ namespace AVUP.Fun.Process.Services
                             case PushMessage.StateSignal.CHAT_CALL:
                             case PushMessage.StateSignal.CHAT_READY:
                             case PushMessage.StateSignal.CHAT_END:
+                            case PushMessage.StateSignal.AR_LIVE_TREASURE_BOX_STATE:
                                 break;
                             case PushMessage.StateSignal.CURRENT_RED_PACK_LIST:
                                 var list = CommonStateSignalCurrentRedpackList.Parser.ParseFrom(item.Payload);
