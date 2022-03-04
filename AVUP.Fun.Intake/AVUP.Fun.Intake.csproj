@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AcFunDanmu" Version="1.5.2" />
+    <PackageReference Include="AcFunDanmu" Version="1.5.3" />
     <PackageReference Include="Confluent.Kafka" Version="1.8.2" />
     <PackageReference Include="Confluent.SchemaRegistry" Version="1.8.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="6.0.2">
