@@ -51,6 +51,7 @@ FROM
         [HttpGet("{user:long}/{live}/{timestamp:long}")]
         public ActionResult GetAll(long user, string live, long? timestamp)
         {
+            logger.LogInformation("Get all {{ user: {UserId}, live: {LiveId} }}", user, live);
             return Json(
                 database.ExecuteQueryMapping<ACER>(
                     SELECT_ALL_CMD,
@@ -66,6 +67,7 @@ FROM
         [HttpGet("{user:long}/{live}/data")]
         public ActionResult GetLiveData(long user, string live)
         {
+            logger.LogInformation("Get live data {{ user: {UserId}, live: {LiveId} }}", user, live);
             return Json(
                 database.ExecuteQueryMapping<LiveData>(
                     SELECT_LIVE_DATA_CMD,
@@ -81,6 +83,7 @@ FROM
         [HttpGet("{user:long}/{live}/{type}/{timestamp:long}")]
         public ActionResult GetAllWithType(long user, string live, string type, long? timestamp)
         {
+            logger.LogInformation("Get all with type {{ user:{UserId}, live: {LiveId}, type: {Type} }}", user, live, type);
             return Json(
                 database.ExecuteQueryMapping<ACER>(
                     SELECT_ALL_WITH_TYPE_CMD,
