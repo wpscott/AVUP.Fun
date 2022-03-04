@@ -7,7 +7,6 @@ EXPOSE 80
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
 COPY ["AVUP.Fun.Intake/AVUP.Fun.Intake.csproj", "AVUP.Fun.Intake/"]
-COPY ["NuGet.Config", "./"]
 RUN dotnet restore "AVUP.Fun.Intake/AVUP.Fun.Intake.csproj" --configfile NuGet.Config
 COPY . .
 WORKDIR "/src/AVUP.Fun.Intake"
