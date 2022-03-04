@@ -18,7 +18,7 @@ jobs:
             tag: avupfunprocess
           - image: AVUP.Fun.Intake
             tag: avupfunintake
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     environment: CI
     steps:
     - name: Repo checkout
