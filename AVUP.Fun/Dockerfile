@@ -7,7 +7,7 @@ EXPOSE 80
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
 COPY ["AVUP.Fun/AVUP.Fun.csproj", "AVUP.Fun/"]
-RUN dotnet restore "AVUP.Fun/AVUP.Fun.csproj" --configfile NuGet.Config
+RUN dotnet restore "AVUP.Fun/AVUP.Fun.csproj"
 COPY . .
 WORKDIR "/src/AVUP.Fun"
 RUN dotnet build "AVUP.Fun.csproj" -c Release -o /app/build
