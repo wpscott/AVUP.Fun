@@ -8,8 +8,17 @@ on:
 
 jobs:
   build:
+    strategy:
+      matrix:
+        image: [AVUP.Fun, AVUP.Fun.Process, AVUP.Fun.Intake]
+        include:
+          - image: AVUP.Fun
+            tag: avupfun
+          - image: AVUP.Fun.Process
+            tag: avupfunprocess
+          - image: AVUP.Fun.Process
+            tag: avupfunintake
     runs-on: ubuntu-latest
-    environment: CI
     steps:
     - name: Repo checkout
       uses: actions/checkout@v2
@@ -26,5 +35,5 @@ jobs:
       with:
         context: .
         push: true
-        file: ./AVUP.Fun/Dockerfile
-        tags: ${{ secrets.REGISTRY }}/avupfun
+        file: ./${{ matrix.image }}/Dockerfile
+        tags: ${{ secrets.REGISTRY }}/${{ matrix.tag }}
