@@ -29,8 +29,6 @@ namespace AVUP.Fun.Intake.Services
         private readonly IHttpClientFactory _clientFactory;
         private Timer _timer;
 
-        //private static ImmutableHashSet<string> _types = ImmutableHashSet.Create<string>();
-
         public IntakeWorker(ILogger<IntakeWorker> logger, IHttpClientFactory clientFactory)
         {
             _logger = logger;
@@ -65,7 +63,7 @@ namespace AVUP.Fun.Intake.Services
 
         private async void StartMonitor(object state)
         {
-            await Client.Prepare().ConfigureAwait(false);
+            await Client.Prepare();
             _logger.LogInformation("Fetching live list");
             using var client = _clientFactory.CreateClient("acfun");
             try
@@ -73,10 +71,10 @@ namespace AVUP.Fun.Intake.Services
                 var pcursor = "";
                 do
                 {
-                    using var resp = await client.GetAsync(new Uri($"{Url}?pcursor={pcursor}")).ConfigureAwait(false);
+                    using var resp = await client.GetAsync(new Uri($"{Url}?pcursor={pcursor}"));
                     if (resp.IsSuccessStatusCode)
                     {
-                        var channel = await JsonSerializer.DeserializeAsync<Channel>(await resp.Content.ReadAsStreamAsync().ConfigureAwait(false)).ConfigureAwait(false);
+                        var channel = await JsonSerializer.DeserializeAsync<Channel>(await resp.Content.ReadAsStreamAsync());
                         Parallel.ForEach(channel?.LiveList ?? Array.Empty<Live>(), live =>
                         {
                             PushLive(live);
@@ -111,13 +109,7 @@ namespace AVUP.Fun.Intake.Services
             };
             if (_Monitors.TryAdd(live.AuthorId, data))
             {
-                //var type = string.Join(string.Empty, (live.User.VerifiedTypes ?? Array.Empty<long>()).OrderBy(type => type));
-                //var isNewType = !_types.Contains(type);
-                //if (isNewType)
-                //{
-                //    ImmutableInterlocked.Update(ref _types, (types, type) => types.Add(type), type);
-                //}
-                await client.Initialize($"{live.AuthorId}", true).ConfigureAwait(false);
+                await client.Initialize($"{live.AuthorId}");
                 _logger.LogInformation("Start monitoring {AuthorId}", live.AuthorId);
                 int retry = 0;
                 using var resetTimer = new System.Timers.Timer(10000);
@@ -127,7 +119,7 @@ namespace AVUP.Fun.Intake.Services
                 };
                 try
                 {
-                    while (!await client.Start().ConfigureAwait(false) && retry < 6)
+                    while (!await client.Start() && retry < 6)
                     {
                         if (retry > 0)
                         {
@@ -172,38 +164,35 @@ namespace AVUP.Fun.Intake.Services
 
         private void HandleSignal(Client sender, string messagetType, ByteString payload)
         {
-            if (long.TryParse(sender.HostId, out var uperId))
+            if (!_Monitors.TryGetValue(sender.HostId, out var data))
             {
-                if (!_Monitors.TryGetValue(uperId, out var data))
-                {
-                    producer?.Produce("missing",
-                        new Message<Null, string>
-                        {
-                            Value = JsonSerializer.Serialize(
-                                new AcFunPendingMessage
-                                {
-                                    UperId = uperId,
-                                    LiveId = "missing",
-                                    MessageType = messagetType,
-                                    Payload = payload.ToBase64()
-                                })
-                        });
-                }
-                else
-                {
-                    producer?.Produce("pending",
-                        new Message<Null, string>
-                        {
-                            Value = JsonSerializer.Serialize(
+                producer?.Produce("missing",
+                    new Message<Null, string>
+                    {
+                        Value = JsonSerializer.Serialize(
                             new AcFunPendingMessage
                             {
-                                UperId = data.UserId,
-                                LiveId = data.LiveId,
+                                UperId = sender.HostId,
+                                LiveId = "missing",
                                 MessageType = messagetType,
                                 Payload = payload.ToBase64()
                             })
-                        });
-                }
+                    });
+            }
+            else
+            {
+                producer?.Produce("pending",
+                    new Message<Null, string>
+                    {
+                        Value = JsonSerializer.Serialize(
+                        new AcFunPendingMessage
+                        {
+                            UperId = data.UserId,
+                            LiveId = data.LiveId,
+                            MessageType = messagetType,
+                            Payload = payload.ToBase64()
+                        })
+                    });
             }
         }
     }

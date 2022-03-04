@@ -3,6 +3,7 @@ using AVUP.Fun.Intake.Models;
 using AVUP.Fun.Intake.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using System.Threading.Tasks;
 
 namespace AVUP.Fun.Intake.Controllers
 {
@@ -35,11 +36,18 @@ namespace AVUP.Fun.Intake.Controllers
             return Json(Client.Gifts);
         }
 
-        [HttpGet("gift/{id:long}")]
-        public ActionResult GetGift(long id)
+        [HttpGet("gift/{uper:long}/{id:long}")]
+        public async Task<ActionResult> GetGift(long uper, long id)
         {
-            if (Client.Gifts.TryGetValue(id, out var gift)) { return Json(gift); }
-            else { return NotFound(); }
+            while (true)
+            {
+                if (Client.Gifts.TryGetValue(id, out var gift))
+                {
+                    return Json(gift);
+                }
+                var client = new Client();
+                await client.Initialize(uper, true);
+            }
         }
     }
 }

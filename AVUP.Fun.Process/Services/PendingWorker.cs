@@ -61,7 +61,6 @@ namespace AVUP.Fun.Process.Services
 
                 producer.Flush(stoppingToken);
                 consumer.Close();
-                return Task.CompletedTask;
             })));
         }
 
@@ -180,14 +179,14 @@ namespace AVUP.Fun.Process.Services
                                     if (!Gifts.TryGetValue(gift.GiftId, out var info))
                                     {
                                         using var client = _clientFactory.CreateClient("acfun");
-                                        var uri = new Uri($"http://intake/status/gift/{gift.GiftId}");
+                                        var uri = new Uri($"http://intake/status/gift/{pendingMessage.UperId}/{gift.GiftId}");
                                         HttpResponseMessage resp;
                                         do
                                         {
-                                            resp = await client.GetAsync(uri).ConfigureAwait(false);
+                                            resp = await client.GetAsync(uri);
                                             if (resp.IsSuccessStatusCode)
                                             {
-                                                info = await JsonSerializer.DeserializeAsync<GiftInfo>(await resp.Content.ReadAsStreamAsync().ConfigureAwait(false)).ConfigureAwait(false);
+                                                info = await JsonSerializer.DeserializeAsync<GiftInfo>(await resp.Content.ReadAsStreamAsync());
                                                 Gifts.AddOrUpdate(gift.GiftId, info, (k, v) => info);
                                                 break;
                                             }
