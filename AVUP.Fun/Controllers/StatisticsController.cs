@@ -103,6 +103,7 @@ LIMIT 10";
         [HttpGet("live/{range}")]
         public ActionResult GetLiveRank(string range)
         {
+            logger.LogInformation("Get live rank: {Range}", range);
             return range switch
             {
                 "week" => Json(database.ExecuteQueryMapping<TopUser>(TOP_10_LIVE_DD_BY_WEEK_COMMAND)),
@@ -115,6 +116,7 @@ LIMIT 10";
         [HttpGet("comment/{range}")]
         public ActionResult GetCommentRank(string range)
         {
+            logger.LogInformation("Get comment rank: {Range}", range);
             return range switch
             {
                 "week" => Json(database.ExecuteQueryMapping<TopUser>(TOP_10_COMMENT_DD_BY_WEEK_COMMAND)),
