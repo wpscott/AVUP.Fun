@@ -15,7 +15,11 @@ namespace AVUP.Fun.Controllers
         private const string SELECT_USER_CMD =
 @"SELECT DISTINCT
     UserId,
-    UserName
+    UserName,
+    UserAvatar,
+    LiveId,
+    Title,
+    CreateTime
 FROM live
 ORDER BY
     CreateTime DESC,
@@ -41,32 +45,30 @@ LIMIT @offset, @limit";
         }
 
         [HttpGet]
-        [HttpGet("{offset:long}/{limit:long}")]
-        public ActionResult GetUser(long? offset, long? limit)
+        public ActionResult GetUser([FromQuery] LimitOffsetQuery query)
         {
             return Json(
                 database.ExecuteQueryMapping<Uper>(
                     SELECT_USER_CMD,
                     new ClickHouseParameter[]
                     {
-                        new () { DbType = System.Data.DbType.UInt32, ParameterName = "offset", Value = offset ?? 0 },
-                        new () { DbType = System.Data.DbType.UInt32, ParameterName = "limit", Value =limit ?? 20 }
+                        new () { DbType = System.Data.DbType.UInt32, ParameterName = "offset", Value = query.Offset },
+                        new () { DbType = System.Data.DbType.UInt32, ParameterName = "limit", Value = query.Limit }
                     }
                 )
             );
         }
 
         [HttpGet("{user:long}")]
-        [HttpGet("{user:long}/{offset:long}/{limit:long}")]
-        public ActionResult GetUserLive(long user, long? offset, long? limit)
+        public ActionResult GetUserLive(long user, [FromQuery] LimitOffsetQuery query)
         {
             return Json(
                 database.ExecuteQueryMapping<Live>(
                     SELECT_LIVE_CMD,
                     new ClickHouseParameter[] {
                         new() { DbType = System.Data.DbType.UInt64, ParameterName = "user", Value = user },
-                        new ClickHouseParameter { DbType = System.Data.DbType.UInt32, ParameterName = "offset", Value = offset ?? 0 },
-                        new ClickHouseParameter { DbType = System.Data.DbType.UInt32, ParameterName = "limit", Value = limit ?? 20 }
+                        new ClickHouseParameter { DbType = System.Data.DbType.UInt32, ParameterName = "offset", Value = query.Offset },
+                        new ClickHouseParameter { DbType = System.Data.DbType.UInt32, ParameterName = "limit", Value = query.Limit }
                     }
                 )
             );

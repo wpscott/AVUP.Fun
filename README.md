@@ -110,13 +110,11 @@ FROM acfun.kafka_acer
 
 # 非官方不完整统计
 
-## 获取最新开播的主播（默认显示10个）
-* https://api.avup.fun/uper
-* https://api.avup.fun/uper/{offset}/{limit}
+## 获取最新开播的主播（默认显示20个）
+* https://api.avup.fun/uper?offset=0&limit=20
 
-## 获取主播最新的开播记录（默认显示10个）
-* https://api.avup.fun/uper/{id}
-* https://api.avup.fun/uper/{id}/{offset}/{limit}
+## 获取主播最新的开播记录（默认显示20个）
+* https://api.avup.fun/uper/{id}?offset=0&limit=20
 
 ## 获取直播数据（包括弹幕、进入、点赞、关注及礼物）
 * https://api.avup.fun/live/{id}/{liveId}

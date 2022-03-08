@@ -19,8 +19,8 @@ namespace AVUP.Fun.Intake.Services
     {
         private const string Url = "https://live.acfun.cn/api/channel/list";
 
-        private static readonly ConcurrentDictionary<long, LiveData> _Monitors = new();
-        public static ReadOnlyDictionary<long, LiveData> Monitors => new(_Monitors);
+        private static readonly ConcurrentDictionary<(long, string), LiveData> _Monitors = new();
+        public static ReadOnlyDictionary<(long, string), LiveData> Monitors => new(_Monitors);
 
         private static readonly ProducerConfig _config = new() { BootstrapServers = "broker:9092" };
         private readonly IProducer<Null, string> producer;
@@ -78,7 +78,7 @@ namespace AVUP.Fun.Intake.Services
                         Parallel.ForEach(channel?.LiveList ?? Array.Empty<Live>(), live =>
                         {
                             PushLive(live);
-                            if (!_Monitors.ContainsKey(live.AuthorId))
+                            if (!_Monitors.ContainsKey((live.AuthorId, live.LiveId)))
                             {
                                 Monitor(live);
                             }
@@ -107,7 +107,7 @@ namespace AVUP.Fun.Intake.Services
                 Title = live.Title,
                 Client = client
             };
-            if (_Monitors.TryAdd(live.AuthorId, data))
+            if (_Monitors.TryAdd((live.AuthorId, live.LiveId), data))
             {
                 await client.Initialize($"{live.AuthorId}");
                 _logger.LogInformation("Start monitoring {AuthorId}", live.AuthorId);
@@ -133,7 +133,7 @@ namespace AVUP.Fun.Intake.Services
                 finally
                 {
                     _logger.LogInformation("End monitoring {AuthorId}", live.AuthorId);
-                    _Monitors.TryRemove(live.AuthorId, out _);
+                    _Monitors.TryRemove((live.AuthorId, live.LiveId), out _);
                 }
             }
         }
@@ -164,7 +164,7 @@ namespace AVUP.Fun.Intake.Services
 
         private void HandleSignal(Client sender, string messagetType, ByteString payload)
         {
-            if (!_Monitors.TryGetValue(sender.HostId, out var data))
+            if (!_Monitors.TryGetValue((sender.HostId, sender.LiveId), out var data))
             {
                 producer?.Produce("missing",
                     new Message<Null, string>
