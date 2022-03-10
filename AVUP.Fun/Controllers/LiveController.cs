@@ -4,6 +4,7 @@ using ClickHouse.Net;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using System.Data;
 
 namespace AVUP.Fun.Controllers
 {
@@ -56,9 +57,9 @@ FROM
                 database.ExecuteQueryMapping<ACER>(
                     SELECT_ALL_CMD,
                     new ClickHouseParameter[] {
-                        new () { DbType = System.Data.DbType.UInt64, ParameterName = "user", Value = user },
-                        new() { DbType = System.Data.DbType.String, ParameterName = "live", Value = live },
-                        new() { ParameterName = "timestamp", Value = timestamp ?? 0 },
+                        new() { DbType = DbType.UInt64, ParameterName = "user", Value = user },
+                        new() { ParameterName = "live", Value = live },
+                        new() { DbType = DbType.UInt64, ParameterName = "timestamp", Value = timestamp ?? 0 },
                     }
                 )
             );
@@ -72,8 +73,8 @@ FROM
                 database.ExecuteQueryMapping<LiveData>(
                     SELECT_LIVE_DATA_CMD,
                     new ClickHouseParameter[] {
-                        new  () { DbType = System.Data.DbType.UInt64, ParameterName = "user", Value = user },
-                        new () { DbType = System.Data.DbType.String, ParameterName = "live", Value = live },
+                        new() { DbType = DbType.UInt64, ParameterName = "user", Value = user },
+                        new() { ParameterName = "live", Value = live },
                     }
                 )
             );
@@ -88,10 +89,10 @@ FROM
                 database.ExecuteQueryMapping<ACER>(
                     SELECT_ALL_WITH_TYPE_CMD,
                     new ClickHouseParameter[] {
-                        new () { DbType = System.Data.DbType.UInt64, ParameterName = "user", Value = user },
-                        new () { DbType = System.Data.DbType.String, ParameterName = "live", Value = live },
-                        new () { DbType = System.Data.DbType.String, ParameterName = "type", Value = type },
-                        new () { ParameterName = "timestamp", Value = timestamp ?? 0 },
+                        new() { DbType = DbType.UInt64, ParameterName = "user", Value = user },
+                        new() { ParameterName = "live", Value = live },
+                        new() { ParameterName = "type", Value = type },
+                        new() { DbType = DbType.UInt64, ParameterName = "timestamp", Value = timestamp ?? 0 },
                     }
                 )
             );

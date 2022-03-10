@@ -4,6 +4,7 @@ using ClickHouse.Net;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using System.Data;
 
 namespace AVUP.Fun.Controllers
 {
@@ -52,8 +53,8 @@ LIMIT @offset, @limit";
                     SELECT_USER_CMD,
                     new ClickHouseParameter[]
                     {
-                        new () { DbType = System.Data.DbType.UInt32, ParameterName = "offset", Value = query.Offset },
-                        new () { DbType = System.Data.DbType.UInt32, ParameterName = "limit", Value = query.Limit }
+                        new () { DbType = DbType.UInt32, ParameterName = "offset", Value = query.Offset },
+                        new () { DbType = DbType.UInt32, ParameterName = "limit", Value = query.Limit }
                     }
                 )
             );
@@ -66,9 +67,9 @@ LIMIT @offset, @limit";
                 database.ExecuteQueryMapping<Live>(
                     SELECT_LIVE_CMD,
                     new ClickHouseParameter[] {
-                        new() { DbType = System.Data.DbType.UInt64, ParameterName = "user", Value = user },
-                        new ClickHouseParameter { DbType = System.Data.DbType.UInt32, ParameterName = "offset", Value = query.Offset },
-                        new ClickHouseParameter { DbType = System.Data.DbType.UInt32, ParameterName = "limit", Value = query.Limit }
+                        new() { DbType = DbType.UInt64, ParameterName = "user", Value = user },
+                        new() { DbType = DbType.UInt32, ParameterName = "offset", Value = query.Offset },
+                        new() { DbType = DbType.UInt32, ParameterName = "limit", Value = query.Limit }
                     }
                 )
             );
