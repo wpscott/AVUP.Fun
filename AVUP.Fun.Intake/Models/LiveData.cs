@@ -12,5 +12,7 @@ namespace AVUP.Fun.Intake.Models
 
         [JsonIgnore]
         public Client Client { get; init; }
+        [JsonIgnore]
+        public (long, string) Key => (UserId, LiveId);
     }
 }

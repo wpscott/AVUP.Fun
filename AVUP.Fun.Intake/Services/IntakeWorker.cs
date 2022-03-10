@@ -88,9 +88,7 @@ namespace AVUP.Fun.Intake.Services
                     else { break; }
                 } while (pcursor != "no_more");
             }
-            catch (HttpRequestException) { }
-            catch (TaskCanceledException) { }
-            catch (JsonException) { }
+            catch (Exception ex) { _logger.LogError(ex, "Monitor timer failed"); }
         }
 
         private async void Monitor(Live live)
@@ -107,18 +105,19 @@ namespace AVUP.Fun.Intake.Services
                 Title = live.Title,
                 Client = client
             };
-            if (_Monitors.TryAdd((live.AuthorId, live.LiveId), data))
+            if (_Monitors.TryAdd(data.Key, data))
             {
-                await client.Initialize($"{live.AuthorId}");
-                _logger.LogInformation("Start monitoring {AuthorId}", live.AuthorId);
-                int retry = 0;
-                using var resetTimer = new System.Timers.Timer(10000);
-                resetTimer.Elapsed += (s, e) =>
-                {
-                    retry = 0;
-                };
                 try
                 {
+                    await client.Initialize(live.AuthorId);
+                    _logger.LogInformation("Start monitoring {AuthorId}", live.AuthorId);
+                    int retry = 0;
+                    using var resetTimer = new System.Timers.Timer(10000);
+                    resetTimer.Elapsed += (s, e) =>
+                    {
+                        retry = 0;
+                    };
+
                     while (!await client.Start() && retry < 6)
                     {
                         if (retry > 0)
@@ -129,71 +128,55 @@ namespace AVUP.Fun.Intake.Services
                         resetTimer.Start();
                     }
                 }
-                catch (NullReferenceException ex) { _logger.LogError(ex, "Monitor failed"); }
+                catch (Exception ex) { _logger.LogError(ex, "Monitor failed"); }
                 finally
                 {
                     _logger.LogInformation("End monitoring {AuthorId}", live.AuthorId);
-                    _Monitors.TryRemove((live.AuthorId, live.LiveId), out _);
+                    _Monitors.TryRemove(data.Key, out _);
                 }
             }
         }
 
         private void PushLive(Live live)
         {
-            var data = new AcFunLive
+            producer?.Produce(AcFunLive.Topic, new Message<Null, string>
             {
-                UserId = live.AuthorId,
-                LiveId = live.LiveId,
-                Title = live.Title,
-                Like = live.LikeCount,
-                Audience = live.OnlineCount,
-                TypeId = live.Type?.Id ?? 0,
-                TypeCategory = live.Type?.CategoryId ?? 0,
-                TypeName = live.Type?.Name ?? string.Empty,
-                TypeCategoryName = live.Type?.CategoryName ?? string.Empty,
-                UserPost = live.User.ContributeCountValue,
-                UserFan = live.User.FanCountValue,
-                UserFollowing = live.User.FollowingCountValue,
-                UserAvatar = $"{live.User.HeadUrl.Scheme}://{live.User.HeadUrl.Host}{live.User.HeadUrl.AbsolutePath}",
-                UserName = live.User.Name,
-                CreateTime = live.CreateTime,
-                Timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
-            };
-            producer?.Produce(AcFunLive.Topic, new Message<Null, string> { Value = JsonSerializer.Serialize(data) });
+                Value = JsonSerializer.Serialize(new AcFunLive
+                {
+                    UserId = live.AuthorId,
+                    LiveId = live.LiveId,
+                    Title = live.Title,
+                    Like = live.LikeCount,
+                    Audience = live.OnlineCount,
+                    TypeId = live.Type?.Id ?? 0,
+                    TypeCategory = live.Type?.CategoryId ?? 0,
+                    TypeName = live.Type?.Name ?? string.Empty,
+                    TypeCategoryName = live.Type?.CategoryName ?? string.Empty,
+                    UserPost = live.User.ContributeCountValue,
+                    UserFan = live.User.FanCountValue,
+                    UserFollowing = live.User.FollowingCountValue,
+                    UserAvatar = $"{live.User.HeadUrl.Scheme}://{live.User.HeadUrl.Host}{live.User.HeadUrl.AbsolutePath}",
+                    UserName = live.User.Name,
+                    CreateTime = live.CreateTime,
+                    Timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+                })
+            });
         }
 
         private void HandleSignal(Client sender, string messagetType, ByteString payload)
         {
-            if (!_Monitors.TryGetValue((sender.HostId, sender.LiveId), out var data))
-            {
-                producer?.Produce("missing",
-                    new Message<Null, string>
-                    {
-                        Value = JsonSerializer.Serialize(
-                            new AcFunPendingMessage
-                            {
-                                UperId = sender.HostId,
-                                LiveId = "missing",
-                                MessageType = messagetType,
-                                Payload = payload.ToBase64()
-                            })
-                    });
-            }
-            else
-            {
-                producer?.Produce("pending",
-                    new Message<Null, string>
-                    {
-                        Value = JsonSerializer.Serialize(
+            producer?.Produce("pending",
+                new Message<Null, string>
+                {
+                    Value = JsonSerializer.Serialize(
                         new AcFunPendingMessage
                         {
-                            UperId = data.UserId,
-                            LiveId = data.LiveId,
+                            UperId = sender.HostId,
+                            LiveId = sender.LiveId,
                             MessageType = messagetType,
                             Payload = payload.ToBase64()
                         })
-                    });
-            }
+                });
         }
     }
 }
