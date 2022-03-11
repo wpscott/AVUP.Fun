@@ -1,10 +1,8 @@
 ﻿using AVUP.Fun.Models;
-using ClickHouse.Ado;
-using ClickHouse.Net;
+using AVUP.Fun.Services;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using System.Data;
 
 namespace AVUP.Fun.Controllers
 {
@@ -13,89 +11,42 @@ namespace AVUP.Fun.Controllers
     [ApiController]
     public class LiveController : Controller
     {
-        private const string SELECT_ALL_CMD =
-@"SELECT DISTINCT *
-FROM acer
-WHERE (UperId = @user) AND (LiveId = @live) AND (Timestamp > @timestamp)
-ORDER BY Timestamp ASC";
-        private const string SELECT_ALL_WITH_TYPE_CMD =
-@"SELECT DISTINCT *
-FROM acer
-WHERE (UperId = @user) AND (LiveId = @live) AND (Type = @type) AND (Timestamp > @timestamp)
-ORDER BY Timestamp ASC";
-        private const string SELECT_LIVE_DATA_CMD =
-@"SELECT
-    Timestamp,
-    finalizeAggregation(state) AS Total,
-    runningAccumulate(state) AS AccumulateTotal
-FROM
-(
-    SELECT
-        Timestamp,
-        uniqState(Timestamp, UserId) AS state
-    FROM acer
-    WHERE (UperId = @user) AND (LiveId = @live) AND (Type = 'comment')
-    GROUP BY Timestamp
-    ORDER BY Timestamp ASC
-)";
-
         private readonly ILogger<LiveController> logger;
-        private readonly IClickHouseDatabase database;
+        private readonly UperService uperService;
+        private readonly LiveService liveService;
 
-        public LiveController(ILogger<LiveController> logger, IClickHouseDatabase database)
+        public LiveController(ILogger<LiveController> logger, UperService userService, LiveService liveService)
         {
             this.logger = logger;
-            this.database = database;
+            this.uperService = userService;
+            this.liveService = liveService;
+        }
+
+        [HttpGet("{user:long}")]
+        public ActionResult GetUserLive(long user, [FromQuery] Query query)
+        {
+            return Json(uperService.GetUperLive(user, query));
         }
 
         [HttpGet("{user:long}/{live}")]
-        [HttpGet("{user:long}/{live}/{timestamp:long}")]
-        public ActionResult GetAll(long user, string live, long? timestamp)
+        public ActionResult GetAll(long user, string live, [FromQuery] Query query)
         {
             logger.LogInformation("Get all {{ user: {UserId}, live: {LiveId} }}", user, live);
-            return Json(
-                database.ExecuteQueryMapping<ACER>(
-                    SELECT_ALL_CMD,
-                    new ClickHouseParameter[] {
-                        new() { DbType = DbType.UInt64, ParameterName = "user", Value = user },
-                        new() { ParameterName = "live", Value = live },
-                        new() { DbType = DbType.UInt64, ParameterName = "timestamp", Value = timestamp ?? 0 },
-                    }
-                )
-            );
+            return Json(liveService.GetAllData(user, live, query));
         }
 
         [HttpGet("{user:long}/{live}/data")]
         public ActionResult GetLiveData(long user, string live)
         {
             logger.LogInformation("Get live data {{ user: {UserId}, live: {LiveId} }}", user, live);
-            return Json(
-                database.ExecuteQueryMapping<LiveData>(
-                    SELECT_LIVE_DATA_CMD,
-                    new ClickHouseParameter[] {
-                        new() { DbType = DbType.UInt64, ParameterName = "user", Value = user },
-                        new() { ParameterName = "live", Value = live },
-                    }
-                )
-            );
+            return Json(liveService.GetLiveCommentData(user, live));
         }
 
         [HttpGet("{user:long}/{live}/{type}")]
-        [HttpGet("{user:long}/{live}/{type}/{timestamp:long}")]
-        public ActionResult GetAllWithType(long user, string live, string type, long? timestamp)
+        public ActionResult GetAllByType(long user, string live, string type, [FromQuery] Query query)
         {
             logger.LogInformation("Get all with type {{ user:{UserId}, live: {LiveId}, type: {Type} }}", user, live, type);
-            return Json(
-                database.ExecuteQueryMapping<ACER>(
-                    SELECT_ALL_WITH_TYPE_CMD,
-                    new ClickHouseParameter[] {
-                        new() { DbType = DbType.UInt64, ParameterName = "user", Value = user },
-                        new() { ParameterName = "live", Value = live },
-                        new() { ParameterName = "type", Value = type },
-                        new() { DbType = DbType.UInt64, ParameterName = "timestamp", Value = timestamp ?? 0 },
-                    }
-                )
-            );
+            return Json(liveService.GetAllDataByType(user, live, type, query));
         }
     }
 }

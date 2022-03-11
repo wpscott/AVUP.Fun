@@ -1,3 +1,4 @@
+using AVUP.Fun.Services;
 using ClickHouse.Ado;
 using ClickHouse.Net;
 using Microsoft.AspNetCore.Builder;
@@ -39,6 +40,10 @@ namespace AVUP.Fun
                     builder.SetPreflightMaxAge(TimeSpan.FromDays(30));
                 });
             });
+
+            services.AddSingleton<StatisticsService>();
+            services.AddSingleton<UperService>();
+            services.AddSingleton<LiveService>();
         }
 
         public static void Configure(IApplicationBuilder app, IWebHostEnvironment env)

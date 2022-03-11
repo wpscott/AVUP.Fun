@@ -1,5 +1,4 @@
-﻿using AVUP.Fun.Models;
-using ClickHouse.Net;
+﻿using AVUP.Fun.Services;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -11,92 +10,13 @@ namespace AVUP.Fun.Controllers
     [ApiController]
     public class StatisticsController : Controller
     {
-        private const string SELECT_GIFT_RANK_IN_LIVE_COMMAND =
-@"SELECT
-    UserId,
-    sum(Total) AS Total
-FROM
-(
-    SELECT
-        UserId,
-        max(GiftCombo) * any(GiftValue) AS Total
-    FROM acer
-    WHERE (Type = 'gift') AND (GiftId != 1) AND (LiveId = @live)
-    GROUP BY
-        UserId,
-        GiftComboId
-    ORDER BY Total DESC
-)
-GROUP BY UserId
-ORDER BY Total DESC";
-        private const string TOP_10_LIVE_DD_BY_DAY_COMMAND =
-@"SELECT
-    UserId,
-    countDistinct(LiveId) AS Total
-FROM acer
-WHERE toYYYYMMDD(Timestamp) = toYYYYMMDD(now())
-GROUP BY UserId
-ORDER BY
-    Total DESC
-LIMIT 10";
-        private const string TOP_10_COMMENT_DD_BY_DAY_COMMAND =
-@"SELECT
-    UserId,
-    countDistinct(Timestamp) AS Total
-FROM acer
-WHERE (Type = 'comment') AND (toYYYYMMDD(Timestamp) = toYYYYMMDD(now()))
-GROUP BY UserId
-ORDER BY
-    Total DESC
-LIMIT 10";
-        private const string TOP_10_LIVE_DD_BY_WEEK_COMMAND =
-@"SELECT
-    UserId,
-    countDistinct(LiveId) AS Total
-FROM acer
-WHERE week(Timestamp) = week(now())
-GROUP BY UserId
-ORDER BY
-    Total DESC
-LIMIT 10";
-        private const string TOP_10_COMMENT_DD_BY_WEEK_COMMAND =
-@"SELECT
-    UserId,
-    countDistinct(Timestamp) AS Total
-FROM acer
-WHERE (Type = 'comment') AND (week(Timestamp) = week(now()))
-GROUP BY UserId
-ORDER BY
-    Total DESC
-LIMIT 10";
-        private const string TOP_10_LIVE_DD_BY_MONTH_COMMAND =
-@"SELECT
-    UserId,
-    countDistinct(LiveId) AS Total
-FROM acer
-WHERE toYYYYMM(Timestamp) = toYYYYMM(now())
-GROUP BY UserId
-ORDER BY
-    Total DESC
-LIMIT 10";
-        private const string TOP_10_COMMENT_DD_BY_MONTH_COMMAND =
-@"SELECT
-    UserId,
-    countDistinct(Timestamp) AS Total
-FROM acer
-WHERE (Type = 'comment') AND (toYYYYMM(Timestamp) = toYYYYMM(now()))
-GROUP BY UserId
-ORDER BY
-    Total DESC
-LIMIT 10";
-
         private readonly ILogger<StatisticsController> logger;
-        private readonly IClickHouseDatabase database;
+        private readonly StatisticsService service;
 
-        public StatisticsController(ILogger<StatisticsController> logger, IClickHouseDatabase database)
+        public StatisticsController(ILogger<StatisticsController> logger, StatisticsService service)
         {
             this.logger = logger;
-            this.database = database;
+            this.service = service;
         }
 
         [HttpGet("live")]
@@ -104,12 +24,7 @@ LIMIT 10";
         public ActionResult GetLiveRank(string range)
         {
             logger.LogInformation("Get live rank: {Range}", range);
-            return range switch
-            {
-                "week" => Json(database.ExecuteQueryMapping<TopUser>(TOP_10_LIVE_DD_BY_WEEK_COMMAND)),
-                "month" => Json(database.ExecuteQueryMapping<TopUser>(TOP_10_LIVE_DD_BY_MONTH_COMMAND)),
-                _ => Json(database.ExecuteQueryMapping<TopUser>(TOP_10_LIVE_DD_BY_DAY_COMMAND)),
-            };
+            return Json(service.GetLiveRank(range));
         }
 
         [HttpGet("comment")]
@@ -117,12 +32,7 @@ LIMIT 10";
         public ActionResult GetCommentRank(string range)
         {
             logger.LogInformation("Get comment rank: {Range}", range);
-            return range switch
-            {
-                "week" => Json(database.ExecuteQueryMapping<TopUser>(TOP_10_COMMENT_DD_BY_WEEK_COMMAND)),
-                "month" => Json(database.ExecuteQueryMapping<TopUser>(TOP_10_COMMENT_DD_BY_MONTH_COMMAND)),
-                _ => Json(database.ExecuteQueryMapping<TopUser>(TOP_10_COMMENT_DD_BY_DAY_COMMAND)),
-            };
+            return Json(service.GetCommentRank(range));
         }
     }
 }
