@@ -7,17 +7,69 @@
 1. 创建Kafka主题
 
 ```shell
-kafka-topics --bootstrap-server localhost:9092 --create --topic acer
+kafka-topics --bootstrap-server localhost:9092 --create --topic live --partitions 1
+kafka-topics --bootstrap-server localhost:9092 --create --topic pending --partitions 6
+kafka-topics --bootstrap-server localhost:9092 --create --topic missing --partitions 1
+kafka-topics --bootstrap-server localhost:9092 --create --topic acer --partitions 6
+kafka-topics --bootstrap-server localhost:9092 --create --topic processed --partitions 6
+kafka-topics --bootstrap-server localhost:9092 --create --topic hub --partitions 1
+kafka-topics --bootstrap-server localhost:9092 --create --topic room --partitions 1
 ```
 2. 创建ClickHouse数据库
 
 ```sql
 create database acfun;
 ```
-3. 创建acer表
+3. 创建live表
 ```sql
-CREATE TABLE acfun.acer
-(
+create table acfun.live (
+    `UserId` UInt64,
+    `LiveId` String,
+    `Title` String,
+    `Like` UInt32,
+    `Audience` UInt32,
+    `TypeId` UInt16,
+    `TypeCategory` UInt16,
+    `TypeName` String,
+    `TypeCategoryName` String,
+    `UserPost` UInt32,
+    `UserFan` UInt32,
+    `UserFollowing` UInt32,
+    `UserAvatar` String,
+    `UserName` String,
+    `CreateTime` DateTime64,
+    `Timestamp` DateTime64
+) ENGINE = MergeTree() ORDER BY (UserId, LiveId);
+
+create table acfun.kafka_live (
+    `UserId` UInt64,
+    `LiveId` String,
+    `Title` String,
+    `Like` UInt32,
+    `Audience` UInt32,
+    `TypeId` UInt16,
+    `TypeCategory` UInt16,
+    `TypeName` String,
+    `TypeCategoryName` String,
+    `UserPost` UInt32,
+    `UserFan` UInt32,
+    `UserFollowing` UInt32,
+    `UserAvatar` String,
+    `UserName` String,
+    `CreateTime` DateTime64,
+    `Timestamp` DateTime64
+) ENGINE = Kafka SETTINGS
+kafka_broker_list = 'broker:9092',
+kafka_topic_list = 'live',
+kafka_group_name = 'live',
+kafka_format = 'JSONEachRow';
+
+create materialized view acfun.live_view TO acfun.live AS SELECT * FROM acfun.kafka_live;
+```
+4. 创建acer表
+
+```sql
+create table acfun.acer (
     `UperId` UInt64,
     `LiveId` String,
     `Type` String,
@@ -37,15 +89,9 @@ CREATE TABLE acfun.acer
     `GiftCombo` UInt32,
     `GiftComboId` String,
     `GiftValue` UInt64
-)
-ENGINE = MergeTree()
-ORDER BY (UperId, LiveId, UserId)
-```
-4. 创建kafka_acer表，用于连接kafka的acer主题
+) ENGINE = MergeTree() ORDER BY (UperId, LiveId, UserId);
 
-```sql
-CREATE TABLE acfun.kafka_acer
-(
+create table acfun.kafka_acer (
     `UperId` UInt64,
     `LiveId` String,
     `Type` String,
@@ -65,20 +111,72 @@ CREATE TABLE acfun.kafka_acer
     `GiftCombo` UInt32,
     `GiftComboId` String,
     `GiftValue` UInt64
-)
-ENGINE = Kafka
-SETTINGS kafka_broker_list = 'broker:9092', kafka_topic_list = 'acer', kafka_group_name = 'acer', kafka_format = 'JSONEachRow'
+) ENGINE = Kafka SETTINGS
+kafka_broker_list = 'broker:9092',
+kafka_topic_list = 'acer',
+kafka_group_name = 'acer',
+kafka_format = 'JSONEachRow',
+kafka_num_consumers = 6;
+
+create materialized view acfun.acer_view TO acfun.acer AS SELECT * FROM acfun.kafka_acer;
 ```
 
-5. 创建acer_view表，用于从kafka_acer表中导入数据至acer表
+5. 创建room表
 
 ```sql
-CREATE MATERIALIZED VIEW acfun.acer_view TO acfun.acer AS
-SELECT *
-FROM acfun.kafka_acer
+create table acfun.room (
+    `UserId` UInt64,
+    `LiveId` String,
+    `Timestamp` DateTime64,
+    `Banana` UInt64,
+    `Like` UInt64,
+    `LikeDelta` Int32,
+    `Audience` UInt64
+) ENGINE = MergeTree() ORDER BY (UserId, LiveId);
+
+create table acfun.kafka_room (
+    `UserId` UInt64,
+    `LiveId` String,
+    `Timestamp` DateTime64,
+    `Banana` UInt64,
+    `Like` UInt64,
+    `LikeDelta` Int32,
+    `Audience` UInt64
+) ENGINE = Kafka SETTINGS
+kafka_broker_list = 'broker:9092',
+kafka_topic_list = 'room',
+kafka_group_name = 'room',
+kafka_format = 'JSONEachRow';
+
+create materialized view acfun.room_view TO acfun.room AS SELECT * FROM acfun.kafka_room;
 ```
 
-6. 向Kafak的acer主题中写入序列化的JSON，内容为
+6. 创建processed表
+
+```sql
+create table acfun.processed (
+    `UperId` UInt64,
+    `LiveId` String,
+    `MessageType` String,
+    `Payload` String
+) ENGINE = MergeTree() ORDER BY (UperId, LiveId);
+
+create table acfun.kafka_processed (
+    `UperId` UInt64,
+    `LiveId` String,
+    `MessageType` String,
+    `Payload` String
+) ENGINE = Kafka SETTINGS
+kafka_broker_list = 'broker:9092',
+kafka_topic_list = 'processed',
+kafka_group_name = 'processed',
+kafka_format = 'JSONEachRow',
+kafka_num_consumers = 6;
+
+create materialized view acfun.processed_view TO acfun.processed AS SELECT * FROM acfun.kafka_processed;
+```
+
+7. 向Kafak的acer主题中写入序列化的JSON，内容为
 
 ```
 {
@@ -117,12 +215,10 @@ FROM acfun.kafka_acer
 * https://api.avup.fun/uper/{id}?offset=0&limit=20
 
 ## 获取直播数据（包括弹幕、进入、点赞、关注及礼物）
-* https://api.avup.fun/live/{id}/{liveId}
-* https://api.avup.fun/live/{id}/{liveId}/{timestamp}
+* https://api.avup.fun/live/{id}/{liveId}?{timestamp}
 
 ## 获取直播数据（指定弹幕、进入、点赞、关注或礼物）
-* https://api.avup.fun/live/{id}/{liveId}/{type}
-* https://api.avup.fun/live/{id}/{liveId}/{type}/{timestamp}
+* https://api.avup.fun/live/{id}/{liveId}/{type}?{timestamp}
 
 **type: comment, enter, like, follow, gift**
 
